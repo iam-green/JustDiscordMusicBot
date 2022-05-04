@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-interface Youtube {
+export interface Youtube {
     title: string;
     owner: string;
     length: string;
@@ -15,7 +15,7 @@ const toTime = (sec: number): string => {
     let h_str: string = h>0?h+':':'';
     let m_str: string = m<10&&h!=0?'0'+m:m.toString();
     let s_str: string = s<10?'0'+s:s.toString();
-    return `${h_str}${m_str} : ${s_str}`;
+    return `${h_str}${m_str}:${s_str}`;
 }
 
 const toSec = (time: string): number => {

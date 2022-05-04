@@ -30,12 +30,18 @@
   },
   "dependencies": {
     "@decorators/di": "^1.0.3",
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.9.0",
     "@nestjs/common": "^8.4.4",
     "chalk": "^5.0.1",
     "discord.js": "^13.6.0",
+    "ffmpeg-static": "^5.0.0",
+    "libsodium-wrappers": "^0.7.10",
     "mysql": "^2.18.1",
+    "opusscript": "^0.0.8",
     "reflect-metadata": "^0.1.13",
     "tsconfig-paths": "^3.14.1",
-    "typeorm": "^0.3.6"
+    "typeorm": "^0.3.6",
+    "ytdl-core": "^4.11.0"
   }
 }

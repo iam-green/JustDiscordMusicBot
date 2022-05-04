@@ -1,3 +1,4 @@
+import { Music } from "../modules/music";
 import { Command } from "../types/command";
 
 export default new Command({
@@ -12,6 +13,7 @@ export default new Command({
         }
     ],
     run: async ({ interaction }) => {
-
+        const music = new Music(interaction);
+        interaction.reply(await music.play(interaction.options.getString('keyword')));
     }
 });
