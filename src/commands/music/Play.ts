@@ -1,5 +1,5 @@
-import { Music } from "../modules/music";
-import { Command } from "../types/command";
+import { Music } from "../../modules/music";
+import { Command } from "../../types/command";
 
 export default new Command({
     name:"play",

@@ -42,10 +42,10 @@ export class ExtendedClient extends Client {
     async registerCommands({ commands, guildId }: RegisterCommandsOptions) {
         if(guildId) {
             await this.guilds.cache.get(guildId)?.commands.set(commands);
-            console.log(`Registering Commands to \x1b[32m${guildId}\x1b[37m`);
+            console.log(`Registering Commands to \x1b[32m${guildId}\x1b[0m`);
         } else {
             await this.application?.commands.set(commands);
-            console.log('Registering \x1b[32mGlobal Commands\x1b[37m');
+            console.log('Registering \x1b[32mGlobal Commands\x1b[0m');
         }
     }
 
@@ -58,7 +58,7 @@ export class ExtendedClient extends Client {
             if (!command.name) return;
             this.commands.set(command.name, command);
             slashCommands.push(command);
-            console.log(`Added \x1b[33m${command.name}\x1b[37m Command`);
+            console.log(`Added \x1b[33m${command.name}\x1b[0m Command (Location : \x1b[32m/src/${filePath.split('../')[1]}\x1b[0m)`);
         }
         this.on('ready', () => {
             this.registerCommands({commands: slashCommands});

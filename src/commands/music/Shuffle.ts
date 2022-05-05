@@ -1,4 +1,4 @@
-import { Command } from "../types/command";
+import { Command } from "../../types/command";
 
 export default new Command({
     name:"shuffle",

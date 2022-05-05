@@ -11,7 +11,7 @@ interface Embed {
 }
 
 interface Default extends Embed {
-    desc: string
+    desc?: string
 }
 
 interface Field extends Embed {
@@ -26,10 +26,10 @@ export function Default({ title, desc, color, url, image, thumbnail, footer, tim
     let embed = new MessageEmbed()
         .setColor(color as ColorResolvable)
         .setTitle(title)
-        .setDescription(desc)
         .setURL(url)
         .setImage(image)
         .setThumbnail(thumbnail);
+    if(desc) embed.setDescription(desc)
     if(footer) embed.setFooter(footer)
     if(timestamp) embed.setTimestamp();
     return embed;

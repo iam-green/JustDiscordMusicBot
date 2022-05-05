@@ -4,4 +4,9 @@ async function bootstrap() {
     dotenv.config();
     await loader();
 };
-bootstrap();
+
+try {
+    bootstrap();
+} catch(e) {
+    console.error(e);
+}

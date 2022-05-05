@@ -1,11 +1,12 @@
 import { Message } from "discord.js";
-import { IMusicGuild } from "../types/music";
+import { IMusicButtonQueueData, IMusicButtonSelectData, IMusicGuild } from "../types/music";
 import { joinVoiceChannel, createAudioPlayer, createAudioResource, DiscordGatewayAdapterCreator, VoiceConnection, AudioPlayerStatus } from '@discordjs/voice';
 import ytdl from 'ytdl-core';
 import { Default, Error } from "./embed";
 import { ExtendedInteraction } from "../types/command";
-import { Search, URL } from "./youtube";
+import { Search, URL, Youtube } from "./youtube";
 import { Button } from "./component";
+import { button_queue_data, button_select_data, generateQueueButtonID, generateSelectButtonID } from "./button";
 
 const music: Array<IMusicGuild> = [];
 
@@ -98,9 +99,78 @@ export class Music {
                 }
             } else { /* Keyword */
                 const data = await Search(str);
-                return Error('개발중...');
-            }
+                let id = generateSelectButtonID();
+                let select = button_select_data[button_select_data.findIndex(e=>e.id==id)];
+                select.queue = data;
+                select.title = str;
+                select.message = await this.message.channel.send({
+                    embeds: [
+                        Default({
+                            title: `\`${select.title}\` 검색목록 ( ${select.index+1} / ${select. queue.length} )`,
+                            color: process.env.BOT_COLOR,
+                            desc: [
+                                `➯ 제목 : ${select.queue[select.index].title}`,
+                                `➯ 게시자 : ${select.queue[select.index].owner}`,
+                                `➯ 길이 : \`${select.queue[select.index].length}\``
+                            ].join('\n'),
+                            thumbnail: select.queue[select.index].image,
+                            timestamp: true,
+                            footer: {
+                                text: this.message.user.tag,
+                                iconURL: this.message.user.avatarURL()
+                            }
+                        })
+                    ],
+                    components: [
+                        Button([
+                            {
+                                id: `SELECT_PREVIOUS_${this.message.user.id}_${select.id}`,
+                                title: 'Previous',
+                                style: 'SECONDARY',
+                                disabled: select.index==0
+                            },
+                            {
+                                id: `SELECT_NEXT_${this.message.user.id}_${select.id}`,
+                                title: 'Next',
+                                style: 'SECONDARY',
+                                disabled: select.index==select.queue.length-1
+                            },
+                            {
+                                id: `SELECT_SELECT_${this.message.user.id}_${select.id}`,
+                                title: 'Select',
+                                style: 'SUCCESS'
+                            },
+                            {
+                                id: `SELECT_CANCEL_${this.message.user.id}_${select.id}`,
+                                title: 'Cancel',
+                                style: 'DANGER'
+                            },
+                            {
+                                title: 'URL',
+                                style: 'LINK',
+                                url: select.queue[select.index].url
+                            }
+                        ])
+                    ]
+                })
+            };
+            return {
+                embeds:[
+                    Default({
+                        title: '성공적으로 곡 선택 메세지가 채널에 전송됨',
+                        desc: '성공적으로 곡 선택 메세지가 채널에 전송되었습니다.',
+                        color: process.env.BOT_COLOR,
+                        timestamp: true
+                    })
+                ],
+                ephemeral: true,
+                footer: {
+                    text: this.message.user.tag,
+                    iconURL: this.message.user.avatarURL()
+                }
+            };
         } catch(e) {
+            console.error(e);
             return Error(e.message);
         }
     }
@@ -281,5 +351,230 @@ export class Music {
                 }
             })
         ]};
+    }
+
+    getQueue(data: Array<Youtube>,num: number): Array<String> {
+        let temp = (data.length/num|0)==(data.length/num)?0:1;
+        let result = [];
+        num=num?num:5;
+        for(let i=0;i<(data.length/num|0)+temp;i++) {
+            let list = [];
+            if((data.length-i*num)>num) {
+                for(let j=0;j<num;j++) list.push(`\`${i*num+j+1}\` ${data[i*num+j].title} \`${data[i*num+j].length}\``);
+                result.push(list.join('\n'));
+            } else {
+                for(let j=0;j<data.length-i*num;j++) list.push(`\`${i*num+j+1}\` ${data[i*num+j].title} \`${data[i*num+j].length}\``);
+                result.push(list.join('\n'));
+            }
+        }
+        return result;
+    }
+
+    async queue() {
+        let server = music[music.findIndex(e=>e.guild_id==this.message.guildId)];
+        let voiceChannel = this.message.member.voice.channel;
+        if(!voiceChannel) return Error('보이스챗 정보를 가지고 오지 못하였습니다.');
+        let permission = voiceChannel.permissionsFor(this.message.client.user);
+        if(!permission.has('CONNECT')) return Error('보이스챗에 들어갈 수 있는 권한이 없습니다.')
+        if(!permission.has('SPEAK')) return Error('보이스챗에서 말할 수 있는 권한이 없습니다.');
+        if(server.queue.length<1) return Error('재생목록에 곡이 없어서 반복 설정을 할 수 없습니다.');
+        let id = generateQueueButtonID();
+        let queue = button_queue_data[button_queue_data.findIndex(e=>e.id==id)];
+        queue.queue = this.getQueue(server.queue,10);
+        queue.message = await this.message.channel.send({
+            embeds: [
+                Default({
+                    title: `재생목록 ( ${queue.index+1} / ${queue.queue.length} )`,
+                    color: process.env.BOT_COLOR,
+                    desc: queue.queue[queue.index].replace(/\`1\`/g,server.option.pause?'⏸':server.option.repeat?'🔄':'▶️'),
+                    timestamp: true,
+                    footer: {
+                        text: this.message.user.tag,
+                        iconURL: this.message.user.avatarURL()
+                    }
+                })
+            ],
+            components:[
+                Button([
+                    {
+                        id: `QUEUE_PREVIOUS_${this.message.user.id}_${queue.id}`,
+                        title: 'Previous',
+                        style: 'SECONDARY',
+                        disabled: queue.index==0
+                    },
+                    {
+                        id: `QUEUE_NEXT_${this.message.user.id}_${queue.id}`,
+                        title: 'Next',
+                        style: 'SECONDARY',
+                        disabled: queue.index==queue.queue.length-1
+                    },
+                    {
+                        id: `QUEUE_DELETE_${this.message.user.id}_${queue.id}`,
+                        title: 'Delete Message',
+                        style: 'DANGER'
+                    }
+                ])
+            ]
+        });
+        return {
+            embeds: [
+                Default({
+                    title: '재생목록 성공적으로 전송됨',
+                    desc: '재생목록이 성공적으로 현재 채널에 전송되었습니다.',
+                    color: process.env.BOT_COLOR,
+                    timestamp: true,
+                    footer: {
+                        text: this.message.user.tag,
+                        iconURL: this.message.user.avatarURL()
+                    }
+                })
+            ],
+            ephemeral :true
+        };
+    }
+
+    queueButton(id: string, option: IMusicButtonQueueData) {
+        let server = music[music.findIndex(e=>e.guild_id==this.message.guildId)];
+        let queue = button_queue_data[button_queue_data.findIndex(e=>e.id==id)];
+        if(option == 'DELETE') {
+            queue.message.delete();
+            button_queue_data.splice(button_queue_data.findIndex(e=>e.id==id),1);
+        } else {
+            queue.index += option == 'PREVIOUS' ? -1 : 1;
+            queue.message.edit({
+                embeds: [
+                    Default({
+                        title: `재생목록 ( ${queue.index+1} / ${queue.queue.length} )`,
+                        color: process.env.BOT_COLOR,
+                        desc: queue.queue[queue.index].replace(/\`1\`/g,server.option.pause?'⏸':server.option.repeat?'🔄':'▶️'),
+                        timestamp: true,
+                        footer: {
+                            text: this.message.user.tag,
+                            iconURL: this.message.user.avatarURL()
+                        }
+                    })
+                ],
+                components:[
+                    Button([
+                        {
+                            id: `QUEUE_PREVIOUS_${this.message.user.id}_${queue.id}`,
+                            title: 'Previous',
+                            style: 'SECONDARY',
+                            disabled: queue.index==0
+                        },
+                        {
+                            id: `QUEUE_NEXT_${this.message.user.id}_${queue.id}`,
+                            title: 'Next',
+                            style: 'SECONDARY',
+                            disabled: queue.index==queue.queue.length-1
+                        },
+                        {
+                            id: `QUEUE_DELETE_${this.message.user.id}_${queue.id}`,
+                            title: 'Delete Message',
+                            style: 'DANGER'
+                        }
+                    ])
+                ]
+            })
+        }
+    }
+
+    selectButton(id: string, option: IMusicButtonSelectData) {
+        let server = music[music.findIndex(e=>e.guild_id==this.message.guildId)];
+        let select = button_select_data[button_select_data.findIndex(e=>e.id==id)];
+        if(option == 'DELETE') {
+            select.message.delete();
+            button_select_data.splice(button_select_data.findIndex(e=>e.id===id),1);
+        } else if(option == 'SELECT') {
+            let voiceChannel = this.message.member.voice.channel;
+            server.queue.push(select.queue[select.index]);
+            const voiceConnection = joinVoiceChannel({
+                channelId:voiceChannel.id,
+                guildId:this.message.guildId,
+                adapterCreator:this.message.guild.voiceAdapterCreator as unknown as DiscordGatewayAdapterCreator
+            });
+            if(server.queue.length<=1) this.ytdl(voiceConnection);
+            select.message.edit({
+                embeds: [
+                    Default({
+                        title: `선택한 곡이 재생목록에 추가됨`,
+                        color: process.env.BOT_COLOR,
+                        desc: [
+                            `➯ 제목 : ${select.queue[select.index].title}`,
+                            `➯ 게시자 : ${select.queue[select.index].owner}`,
+                            `➯ 길이 : \`${select.queue[select.index].length}\``
+                        ].join('\n'),
+                        thumbnail: select.queue[select.index].image,
+                        timestamp: true,
+                        footer: {
+                            text: this.message.user.tag,
+                            iconURL: this.message.user.avatarURL()
+                        }
+                    })
+                ],
+                components:[
+                    Button([
+                        {
+                            title: 'URL',
+                            style: 'LINK',
+                            url: select.queue[select.index].url
+                        }
+                    ])
+                ]
+            });
+            button_select_data.splice(button_select_data.findIndex(e=>e.id===id),1);
+        } else {
+            select.index += option == 'PREVIOUS' ? -1 : 1;
+            select.message.edit({
+                embeds: [
+                    Default({
+                        title: `\`${select.title}\` 검색목록 ( ${select.index+1} / ${select. queue.length} )`,
+                        color: process.env.BOT_COLOR,
+                        desc: [
+                            `➯ 제목 : ${select.queue[select.index].title}`,
+                            `➯ 게시자 : ${select.queue[select.index].owner}`,
+                            `➯ 길이 : \`${select.queue[select.index].length}\``
+                        ].join('\n'),
+                        thumbnail: select.queue[select.index].image,
+                        timestamp: true,
+                        footer: {
+                            text: this.message.user.tag,
+                            iconURL: this.message.user.avatarURL()
+                        }
+                    })
+                ],
+                components: [
+                    Button([
+                        {
+                            id: `SELECT_PREVIOUS_${this.message.user.id}_${select.id}`,
+                            title: 'Previous',
+                            style: 'SECONDARY',
+                            disabled: select.index==0
+                        },
+                        {
+                            id: `SELECT_NEXT_${this.message.user.id}_${select.id}`,
+                            title: 'Next',
+                            style: 'SECONDARY',
+                            disabled: select.index==select.queue.length-1
+                        },
+                        {
+                            id: `SELECT_SELECT_${this.message.user.id}_${select.id}`,
+                            title: 'Select',
+                            style: 'SUCCESS'
+                        },
+                        {
+                            id: `SELECT_CANCEL_${this.message.user.id}_${select.id}`,
+                            title: 'Cancel',
+                            style: 'DANGER'
+                        },
+                        {
+                            title: 'URL',
+                            style: 'LINK',
+                            url: select.queue[select.index].url
+                        }
+                    ])
+                ]
+            });
+        }
     }
 }
