@@ -5,7 +5,6 @@ const format = function (name: string) {
 export const ENVIRONMENT_NAMES = [
     'BOT_NAME',
     'BOT_TOKEN',
-    'BOT_PREFIX',
     'BOT_COLOR',
     'BOT_ACTIVITY'
 ];
