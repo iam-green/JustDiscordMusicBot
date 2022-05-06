@@ -32,13 +32,15 @@ export default new Command({
             embeds:[
                 Default({
                     title: '곡 스킵됨',
-                    desc: [
+                    desc: server.queue.length > 1 ? [
                         `➯ 제목 : ${server.queue[1].title}`,
                         `➯ 게시자 : ${server.queue[1].owner}`,
                         `➯ 길이 : \`${server.queue[1].length}\``
+                    ].join('\n') : [
+                        '재생목록에 곡이 없어 곡 재생이 중지되었습니다.'
                     ].join('\n'),
                     color: process.env.BOT_COLOR,
-                    thumbnail: server.queue[1].image,
+                    thumbnail: server.queue.length > 1 ? server.queue[1].image : null,
                     timestamp: true,
                     footer: {
                         text: interaction.user.tag,
