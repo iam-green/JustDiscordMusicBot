@@ -31,4 +31,4 @@ export interface IMusicButtonSelect extends IMusicButton {
 }
 
 export type IMusicButtonQueueData = 'PREVIOUS' | 'NEXT' | 'DELETE';
-export type IMusicButtonSelectData = 'PREVIOUS' | 'NEXT' | 'SELECT' | 'DELETE';
+export type IMusicButtonSelectData = 'PREVIOUS' | 'NEXT' | 'SELECT' | 'CANCEL';

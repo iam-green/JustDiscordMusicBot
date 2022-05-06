@@ -36,7 +36,7 @@ export function ytdl(connection: VoiceConnection, interaction: ExtendedInteracti
 export function selectButton(id: string, option: IMusicButtonSelectData, interaction: ExtendedInteraction) {
     let server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
     let select = select_data[select_data.findIndex(e=>e.id==id)];
-    if(option == 'DELETE') {
+    if(option == 'CANCEL') {
         select.message.deleteReply();
         select_data.splice(select_data.findIndex(e=>e.id===id),1);
     } else if(option == 'SELECT') {
