@@ -47,7 +47,7 @@ export function selectButton(id: string, option: IMusicButtonSelectData, interac
             guildId:interaction.guildId,
             adapterCreator:interaction.guild.voiceAdapterCreator as unknown as DiscordGatewayAdapterCreator
         });
-        if(server.queue.length<=1) this.ytdl(voiceConnection);
+        if(server.queue.length<=1) ytdl(voiceConnection, interaction);
         select.message.editReply({
             embeds: [
                 Default({
