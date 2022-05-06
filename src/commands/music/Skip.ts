@@ -33,7 +33,6 @@ export default new Command({
                 Default({
                     title: '곡 스킵됨',
                     desc: [
-                        `재생목록에 있는 ${1}개의 곡이 스킵되었습니다.\n`,
                         `➯ 제목 : ${server.queue[1].title}`,
                         `➯ 게시자 : ${server.queue[1].owner}`,
                         `➯ 길이 : \`${server.queue[1].length}\``
