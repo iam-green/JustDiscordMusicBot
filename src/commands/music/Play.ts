@@ -247,6 +247,10 @@ export default new Command({
                     ]
                 });
                 select.message = interaction;
+                setTimeout(()=>{
+                    select.message.deleteReply();
+                    select_data.splice(select_data.findIndex(e=>e.id===id),1);
+                },3*60*1000);
             }
         } catch(e) {
             console.error(e);

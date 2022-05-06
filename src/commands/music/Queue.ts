@@ -83,7 +83,7 @@ export default new Command({
         let id = queueButtonID();
         let queue = queue_data[queue_data.findIndex(e=>e.id==id)];
         queue.queue = getQueue(server.queue,10);
-        await interaction.reply({
+        const result = {
             embeds: [
                 Default({
                     title: `재생목록 ( ${queue.index+1} / ${queue.queue.length} )`,
@@ -117,7 +117,15 @@ export default new Command({
                     }
                 ])
             ]
-        });
+        }
+        await interaction.reply(result);
         queue.message = interaction;
+        setTimeout(()=>{
+            queue.message.editReply({
+                embeds: result.embeds,
+                components: []
+            });
+            queue_data.splice(queue_data.findIndex(e=>e.id===id),1);
+        },5*60*1000);
     }
 });
