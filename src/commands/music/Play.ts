@@ -2,23 +2,28 @@ import { music, selectButtonID, select_data } from "../../modules/music";
 import { Command, ExtendedInteraction } from "../../types/command";
 import { Default, Error } from '../../modules/embed';
 import { Search, URL } from "../../modules/youtube";
-import { AudioPlayerStatus, createAudioPlayer, createAudioResource, DiscordGatewayAdapterCreator, joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
-import youtube from 'ytdl-core';
+import { AudioPlayerStatus, createAudioPlayer, createAudioResource, DiscordGatewayAdapterCreator, joinVoiceChannel, NoSubscriberBehavior, VoiceConnection } from "@discordjs/voice";
+import play from 'play-dl';
 import { Button } from "../../modules/component";
 import { IMusicButtonSelectData } from "../../types/music";
 
-export function ytdl(connection: VoiceConnection, interaction: ExtendedInteraction) {
+export async function playMusic(connection: VoiceConnection, interaction: ExtendedInteraction) {
     let server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
-    const resource = createAudioResource(youtube(server.queue[0].url,{quality:'highestaudio',highWaterMark:1<<25}),{inlineVolume:true});
+    const stream = await play.stream(server.queue[0].url);
+    const resource = createAudioResource(stream.stream,{inlineVolume:true,inputType:stream.type});
     resource.volume.setVolume(0.2);
-    server.player = createAudioPlayer();
+    server.player = createAudioPlayer({
+        behaviors: {
+            noSubscriber: NoSubscriberBehavior.Play
+        }
+    });
     connection.subscribe(server.player);
     server.player.play(resource);
     server.voice_id = interaction.member.voice.channel.id;
     server.player.on(AudioPlayerStatus.Idle,()=>{
         if(server.option.repeat) server.queue.push(server.queue[0]);
         server.queue.shift();
-        if(server.queue.length>0) ytdl(connection, interaction);
+        if(server.queue.length>0) playMusic(connection, interaction);
         else {
             server = {
                 queue: [],
@@ -48,7 +53,7 @@ export function selectButton(id: string, option: IMusicButtonSelectData, interac
             guildId:interaction.guildId,
             adapterCreator:interaction.guild.voiceAdapterCreator as unknown as DiscordGatewayAdapterCreator
         });
-        if(server.queue.length<=1) ytdl(voiceConnection, interaction);
+        if(server.queue.length<=1) playMusic(voiceConnection, interaction);
         select.message.editReply({
             embeds: [
                 Default({
@@ -163,7 +168,7 @@ export default new Command({
                     guildId: interaction.guildId,
                     adapterCreator: interaction.guild.voiceAdapterCreator as unknown as DiscordGatewayAdapterCreator
                 });
-                if(server.queue.length<=data.length) ytdl(voiceConnection,interaction);
+                if(server.queue.length<=data.length) playMusic(voiceConnection,interaction);
                 return interaction.reply({
                     embeds: [
                         Default({
