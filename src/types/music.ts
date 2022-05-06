@@ -19,6 +19,7 @@ export interface IMusicButton {
     id: string;
     message?: ExtendedInteraction;
     index: number;
+    removeTimer?: NodeJS.Timeout;
 }
 
 export interface IMusicButtonQueue extends IMusicButton {

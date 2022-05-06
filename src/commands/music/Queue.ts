@@ -28,6 +28,7 @@ export function queueButton(id: string, option: IMusicButtonQueueData, interacti
     let queue = queue_data[queue_data.findIndex(e=>e.id==id)];
     if(option == 'DELETE') {
         queue.message.deleteReply();
+        clearTimeout(queue.removeTimer);
         queue_data.splice(queue_data.findIndex(e=>e.id==id),1);
     } else {
         queue.index += option == 'PREVIOUS' ? -1 : 1;
@@ -120,7 +121,7 @@ export default new Command({
         }
         await interaction.reply(result);
         queue.message = interaction;
-        setTimeout(()=>{
+        queue.removeTimer = setTimeout(()=>{
             queue.message.editReply({
                 embeds: result.embeds,
                 components: []

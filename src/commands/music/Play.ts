@@ -38,6 +38,7 @@ export function selectButton(id: string, option: IMusicButtonSelectData, interac
     let select = select_data[select_data.findIndex(e=>e.id==id)];
     if(option == 'CANCEL') {
         select.message.deleteReply();
+        clearTimeout(select.removeTimer);
         select_data.splice(select_data.findIndex(e=>e.id===id),1);
     } else if(option == 'SELECT') {
         let voiceChannel = interaction.member.voice.channel;
@@ -76,6 +77,7 @@ export function selectButton(id: string, option: IMusicButtonSelectData, interac
                 ])
             ]
         });
+        clearTimeout(select.removeTimer);
         select_data.splice(select_data.findIndex(e=>e.id===id),1);
     } else {
         select.index += option == 'PREVIOUS' ? -1 : 1;
@@ -247,7 +249,7 @@ export default new Command({
                     ]
                 });
                 select.message = interaction;
-                setTimeout(()=>{
+                select.removeTimer = setTimeout(()=>{
                     select.message.deleteReply();
                     select_data.splice(select_data.findIndex(e=>e.id===id),1);
                 },3*60*1000);
