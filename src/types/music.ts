@@ -1,5 +1,4 @@
 import { AudioPlayer } from "@discordjs/voice";
-import { Message } from "discord.js";
 import { Youtube } from "../modules/youtube";
 import { ExtendedInteraction } from "./command";
 

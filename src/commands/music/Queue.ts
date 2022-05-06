@@ -77,6 +77,7 @@ export default new Command({
         let server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
         let voiceChannel = interaction.member.voice.channel;
         if(!voiceChannel) return Error('보이스챗 정보를 가지고 오지 못하였습니다.');
+        if(server.id && server.id != voiceChannel.id) return Error('봇이 다른 보이스챗에 있어서 이 명령을 실행할 수 없습니다.');
         let permission = voiceChannel.permissionsFor(interaction.client.user);
         if(!permission.has('CONNECT')) return Error('보이스챗에 들어갈 수 있는 권한이 없습니다.')
         if(!permission.has('SPEAK')) return Error('보이스챗에서 말할 수 있는 권한이 없습니다.');
