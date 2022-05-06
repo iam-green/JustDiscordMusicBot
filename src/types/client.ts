@@ -58,7 +58,7 @@ export class ExtendedClient extends Client {
             if (!command.name) return;
             this.commands.set(command.name, command);
             slashCommands.push(command);
-            console.log(`Added \x1b[33m${command.name}\x1b[0m Command (Location : \x1b[32m/src/${filePath.split('../')[1]}\x1b[0m)`);
+            console.log(`Added \x1b[33m${command.name}\x1b[0m Command (Location : \x1b[32m${filePath.replace(/\/types\/\.\./g,'')}\x1b[0m)`);
         }
         this.on('ready', () => {
             this.registerCommands({commands: slashCommands});
