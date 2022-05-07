@@ -25,13 +25,10 @@ export async function playMusic(connection: VoiceConnection, interaction: Extend
         server.queue.shift();
         if(server.queue.length>0) playMusic(connection, interaction);
         else {
-            server = {
-                queue: [],
-                guild_id: server.guild_id,
-                option: {
-                    repeat: false,
-                    pause: false
-                }
+            server.queue = [];
+            server.option = {
+                repeat: false,
+                pause: false
             };
             connection.destroy();
         }
