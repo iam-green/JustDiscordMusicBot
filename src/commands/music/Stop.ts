@@ -1,11 +1,13 @@
 import { Default } from "../../modules/embed";
 import { music } from "../../modules/music";
-import { Command } from "../../types/command";
+import { Command, CommandType } from "../../types/command";
 import { Error } from "../../modules/embed";
+import { SlashCommandBuilder } from "@discordjs/builders";
 
 export default new Command({
-    name:"stop",
-    description:"곡 재생을 중지합니다.",
+    ...new SlashCommandBuilder()
+        .setName('stop')
+        .setDescription('곡 재생을 중지합니다.') as unknown as CommandType,
     run: async ({ interaction }) => {
         const server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
         const voiceChannel = interaction.member.voice.channel;

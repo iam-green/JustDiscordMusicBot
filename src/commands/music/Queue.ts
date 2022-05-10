@@ -1,9 +1,10 @@
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { Interaction } from "discord.js";
 import { Button } from "../../modules/component";
 import { Default } from "../../modules/embed";
 import { music, queueButtonID, queue_data } from "../../modules/music";
 import { Youtube } from "../../modules/youtube";
-import { Command, ExtendedInteraction } from "../../types/command";
+import { Command, CommandType, ExtendedInteraction } from "../../types/command";
 import { IMusicButtonQueueData } from "../../types/music";
 
 export function getQueue(data: Array<Youtube>,num: number): Array<String> {
@@ -71,8 +72,9 @@ export function queueButton(id: string, option: IMusicButtonQueueData, interacti
 }
 
 export default new Command({
-    name:"queue",
-    description:"재생목록에 있는 곡 목록을 보여줍니다.",
+    ...new SlashCommandBuilder()
+        .setName('queue')
+        .setDescription('재생목록에 있는 곡 목록을 보여줍니다.') as unknown as CommandType,
     run: async ({ interaction }) => {
         let server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
         let voiceChannel = interaction.member.voice.channel;

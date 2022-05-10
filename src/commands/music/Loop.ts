@@ -1,10 +1,12 @@
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { Default, Error } from "../../modules/embed";
 import { music } from "../../modules/music";
-import { Command } from "../../types/command";
+import { Command, CommandType } from "../../types/command";
 
 export default new Command({
-    name:"loop",
-    description:"곡을 반복하여 재생하거나 반복 기능을 중지합니다.",
+    ...new SlashCommandBuilder()
+        .setName('loop')
+        .setDescription('곡을 반복하여 재생하거나 반복 기능을 중지합니다.') as unknown as CommandType,
     run: async ({ interaction }) => {
         const server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
         const voiceChannel = interaction.member.voice.channel;

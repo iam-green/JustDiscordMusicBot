@@ -1,10 +1,12 @@
-import { Command } from "../../types/command";
+import { Command, CommandType } from "../../types/command";
 import { Default, Error } from "../../modules/embed";
 import { music } from "../../modules/music";
+import { SlashCommandBuilder } from "@discordjs/builders";
 
 export default new Command({
-    name:"shuffle",
-    description:"현재 재생목록에 있는 곡들을 섞습니다.",
+    ...new SlashCommandBuilder()
+        .setName('shuffle')
+        .setDescription('현재 재생목록에 있는 곡들을 섞습니다.') as unknown as CommandType,
     run: async ({ interaction }) => {
         const server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
         const voiceChannel = interaction.member.voice.channel;

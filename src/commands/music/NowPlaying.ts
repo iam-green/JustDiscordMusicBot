@@ -1,11 +1,13 @@
-import { Command } from "../../types/command";
+import { Command, CommandType } from "../../types/command";
 import { music } from "../../modules/music";
 import { Default, Error } from '../../modules/embed';
 import { Button } from "../../modules/component";
+import { SlashCommandBuilder } from "@discordjs/builders";
 
 export default new Command({
-    name:"nowplay",
-    description:"현재 재생중인 곡 정보를 보여줍니다.",
+    ...new SlashCommandBuilder()
+        .setName('nowplay')
+        .setDescription('현재 재생중인 곡 정보를 보여줍니다.') as unknown as CommandType,
     run: async ({ interaction }) => {
         const server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
         const voiceChannel = interaction.member.voice.channel;

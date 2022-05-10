@@ -1,18 +1,17 @@
 import { music } from "../../modules/music";
-import { Command } from "../../types/command";
+import { Command, CommandType } from "../../types/command";
 import { Default, Error } from "../../modules/embed";
+import { SlashCommandBuilder } from "@discordjs/builders";
 
 export default new Command({
-    name:"skip",
-    description:"곡을 스킵합니다.",
-    options:[
-        {
-            type:4,
-            name:"count",
-            description:"스킵할 곡의 갯수를 입력해주세요.",
-            required:false
-        }
-    ],
+    ...new SlashCommandBuilder()
+        .setName('skip')
+        .setDescription('곡을 스킵합니다.')
+        .addIntegerOption(option=>
+            option.setName('count')
+                .setDescription('스킵할 곡의 갯수를 입력해주세요.')
+                .setRequired(false)
+        ) as unknown as CommandType,
     run: async ({ interaction }) => {
         const num = interaction.options.getInteger('count')||1;
         const server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
@@ -32,13 +31,13 @@ export default new Command({
             embeds:[
                 Default({
                     title: '곡 스킵됨',
-                    desc: server.queue.length > 1 ? [
-                        `➯ 제목 : ${server.queue[1].title}`,
-                        `➯ 게시자 : ${server.queue[1].owner}`,
-                        `➯ 길이 : \`${server.queue[1].length}\``
-                    ].join('\n') : [
-                        '재생목록에 곡이 없어 곡 재생이 중지되었습니다.'
-                    ].join('\n'),
+                    desc: server.queue.length > 1
+                        ? [
+                            `➯ 제목 : ${server.queue[1].title}`,
+                            `➯ 게시자 : ${server.queue[1].owner}`,
+                            `➯ 길이 : \`${server.queue[1].length}\``
+                        ].join('\n')
+                        : '재생목록에 곡이 없어 곡 재생이 중지되었습니다.',
                     color: process.env.BOT_COLOR,
                     thumbnail: server.queue.length > 1 ? server.queue[1].image : null,
                     timestamp: true,

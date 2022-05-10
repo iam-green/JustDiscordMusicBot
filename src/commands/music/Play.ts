@@ -1,11 +1,12 @@
 import { music, selectButtonID, select_data } from "../../modules/music";
-import { Command, ExtendedInteraction } from "../../types/command";
+import { Command, CommandType, ExtendedInteraction } from "../../types/command";
 import { Default, Error } from '../../modules/embed';
 import { Search, URL } from "../../modules/youtube";
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, DiscordGatewayAdapterCreator, joinVoiceChannel, NoSubscriberBehavior, VoiceConnection } from "@discordjs/voice";
 import play from 'play-dl';
 import { Button } from "../../modules/component";
 import { IMusicButtonSelectData } from "../../types/music";
+import { SlashCommandBuilder } from "@discordjs/builders";
 
 export async function playMusic(connection: VoiceConnection, interaction: ExtendedInteraction) {
     let server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
@@ -137,16 +138,14 @@ export function selectButton(id: string, option: IMusicButtonSelectData, interac
 }
 
 export default new Command({
-    name:"play",
-    description:"곡을 재생합니다.",
-    options:[
-        {
-            type:3,
-            name:"keyword",
-            description:"링크나 검색어를 입력해주세요.",
-            required:true
-        }
-    ],
+    ...new SlashCommandBuilder()
+        .setName('play')
+        .setDescription('곡을 재생합니다.')
+        .addStringOption(option=>
+            option.setName('keyword')
+                .setDescription('링크나 검색어를 입력해주세요.')
+                .setRequired(true)    
+        ) as unknown as CommandType,
     run: async ({ interaction }) => {
         const str = interaction.options.getString('keyword');
         const server = music[music.findIndex(e=>e.guild_id==interaction.guildId)];
